@@ -1,9 +1,12 @@
 
-const  User=require('../models/studentModel');
+const  Student=require('../models/studentModel');
 const catchAsync=require('../middleware/asyncHandler');
 const jwt=require('jsonwebtoken');
-const AppError=require('../middleware/appError')
+const AppError=require('../middleware/AppError')
 const crypto=require('crypto');
+const asyncHandler = require('../middleware/asyncHandler');
+const { promisify } = require('util');
+
 
 
 
@@ -14,8 +17,8 @@ const signToken=id =>{
     });
 };
 
-const createAndSendToken=(user,statusCode,res)=>{
-    const token=signToken(user._id);
+const createAndSendToken=(Student,statusCode,res)=>{
+    const token=signToken(Student._id);
     console.log(token)
     cookieOptions={
         expires:new Date(Date.now()+process.env.COOKIE_JWT_EXPIRES_IN*24*60*60*100 ),
@@ -23,23 +26,23 @@ const createAndSendToken=(user,statusCode,res)=>{
     }
     if(process.env.NODE_ENV==='production') cookieOptions.secure=true;
     res.cookie('jwt',token,cookieOptions);
-    user.password=undefined;
+    Student.password=undefined;
     
    
     res.status(statusCode).json(
     {
      status: 'success',
      token,
-     user
+     Student
 
     } );
 }
 exports.signUp=catchAsync(async(req,res,next)=>{
-const newUser = await User.create(req.body);
-const url=`${req.protocol}://${req.get('host')}/me`;
+const newStudent = await Student.create(req.body);
+// const url=`${req.protocol}://${req.get('host')}/me`;
 
 
-createAndSendToken(newUser,201,res);
+createAndSendToken(newStudent,201,res);
 
 
 
@@ -53,15 +56,15 @@ exports.login=catchAsync(async(req,res,next) => {
 
     }
    
-    const user=await User.findOne({email}).select('+password');
+    const Student=await Student.findOne({email}).select('+password');
 
 
-    if(!user||!(await user.correctPassword(password,user.password)))
+    if(!Student||!(await Student.correctPassword(password,Student.password)))
     {
         return next(new AppError('Incorrect Password Or Email',400));
     }
        // send token   
-       createAndSendToken(user,200,res);
+       createAndSendToken(Student,200,res);
 
 });
 
@@ -88,32 +91,35 @@ exports.LoggedIn =async(req,res,next) => {
   try{
     {
 
+
     // Token Validation
   const decoded= await promisify(jwt.verify)(req.cookies.jwt,process.env.JWT_SECRET);
-
-    //Check User Exist 
-    const currentUser=await User.findById(decoded.id);
-    if(!currentUser)
+  
+    //Check Student Exist 
+    const currentStudent=await Student.findById(decoded.id);
+    if(!currentStudent)
     {
         return next();
     }
 
-    //check if user changed password after token
-    if (currentUser.changedPasswordAfter(decoded.iat)
+    //check if Student changed password after token
+    if (currentStudent.changedPasswordAfter(decoded.iat)
     ){
 return next();
 
     };
     
-
+ 
     
-    res.locals.user=currentUser;
+    res.locals.Student=currentStudent;
+    console.log(currentStudent);
     return next();
 }}catch(error)
 {
     return next();
 }
 
+   
     next();
 };
 
@@ -128,7 +134,7 @@ return next();
 
 
 
-exports.protect =catchAsync(async(req,res,next) => {
+exports.protect =asyncHandler(async(req,res,next) => {
     let token;
     // Get Token And Check Of it There
 
@@ -148,33 +154,32 @@ exports.protect =catchAsync(async(req,res,next) => {
         );
     }
 
-    // Token Validation
+
   const decoded= await promisify(jwt.verify)(token,process.env.JWT_SECRET);
 
-    //Check User Exist 
-    const currentUser=await User.findById(decoded.id);
-    if(!currentUser)
+
+    const currentStudent=await Student.findById(decoded.id);
+    if(!currentStudent)
     {
         return next(new AppError('This Token No Longer Exist',401));
     }
 
-    //check if user changed password after token
-    if (currentUser.changedPasswordAfter(decoded.iat)
+    if (currentStudent.changedPasswordAfter(decoded.iat)
     ){
-return next(new AppError(' User changed password ',401));
+return next(new AppError(' Student changed password ',401));
 
     };
     
 
-    //grant toprotected
-    req.user=currentUser;
-    res.locals.user=currentUser;
+    console.log(currentStudent);
+    req.student=currentStudent;
+    res.locals.student=currentStudent;
 
     next();
 });
 exports.restrictTo=(...roles)=>{
     return (req,res,next) => {
-        if(!roles.includes(req.user.role))
+        if(!roles.includes(req.Student.role))
         {
             return next(new AppError('Do not Have Acess',403));
         }
@@ -183,24 +188,24 @@ exports.restrictTo=(...roles)=>{
 
 };
 // exports.forgotPassword=catchAsync(async(req,res,next)=>{
-//     const user = await User.findOne({email:req.body.email});
-//     if(!user) {
+//     const Student = await Student.findOne({email:req.body.email});
+//     if(!Student) {
 //         return next(new AppError('Email Not Found',404));
 //     }
-//     const resetToken=user.createPasswordResetToken();
+//     const resetToken=Student.createPasswordResetToken();
 
-//     await user.save({validateBeforeSave:false});
+//     await Student.save({validateBeforeSave:false});
    
    
 
 //  try{// await sendEmail({
-// //         email : user.email,
+// //         email : Student.email,
 // //         subject: 'Link Will Expire In 10 Min',
 // //         message
 //     //});
 
-//     const resetURL=`${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-//     await new Email(user,resetURL).sendReset();
+//     const resetURL=`${req.protocol}://${req.get('host')}/api/v1/Students/resetPassword/${resetToken}`;
+//     await new Email(Student,resetURL).sendReset();
 //     res.status(200).json({
 //         status:"success",
 //         message:'Reset Link Sent Sucessfully'
@@ -209,9 +214,9 @@ exports.restrictTo=(...roles)=>{
 // }catch(err)
 //     {
 //         console.log(err);
-//         user.passwordResetToken=undefined,
-//        user.resetTokenExpires=undefined
-//        await user.save({validateBeforeSave:false});
+//         Student.passwordResetToken=undefined,
+//        Student.resetTokenExpires=undefined
+//        await Student.save({validateBeforeSave:false});
 //        return next(new AppError('Email Not Sent Try Again',500));
 //     }
 
@@ -222,22 +227,22 @@ exports.restrictTo=(...roles)=>{
 // {
 //     const hashedToken=crypto.createHash('sha256').update(req.params.token).digest('hex');
 //     console.log(hashedToken);
-//   const user =await User.findOne({
+//   const Student =await Student.findOne({
 //     passwordResetToken:hashedToken,
 //     resetTokenExpires:{$gt:Date.now()}
 //   });
-//   if(!user)
+//   if(!Student)
 //   {
 //     return next(new AppError(' Link Expired Or Invalid ! Please Try Again',401));
 //   }
 
-// user.password=req.body.password;
-// user.passwordConfirm=req.body.passwordConfirm;
-// user.passwordResetToken=undefined;
-// user.resetTokenExpires=undefined;
-// await user.save();
+// Student.password=req.body.password;
+// Student.passwordConfirm=req.body.passwordConfirm;
+// Student.passwordResetToken=undefined;
+// Student.resetTokenExpires=undefined;
+// await Student.save();
 
-// createAndSendToken(user,200,res);
+// createAndSendToken(Student,200,res);
 
 
 
@@ -246,26 +251,28 @@ exports.restrictTo=(...roles)=>{
 
 // });
 
-// exports.updatePassword=catchAsync(async(req,res,next) => {
-
-//  const user= await User.findById(req.user.id).select('+password');
+exports.updatePassword=catchAsync(async(req,res,next) => {
 
  
-//  if(!(await user.correctPassword(req.body.passwordCurrent,user.password)))
+ const student= await Student.findById(req.params.id).select('+password');
+ console.log(student.password);
+
+ 
+//  if(!(await Student.correctPassword(req.body.passwordCurrent,Student.password)))
 //  {
 //  return next(new AppError('Invalid Password Try Agin',401));
 //  }
  
  
 
-//  user.password = req.body.password;
-//  user.passwordConfirm=req.body.passwordConfirm;
-//  await user.save();
+ student.password = req.body.password;
+ student.passwordConfirm=req.body.passwordConfirm;
+ await student.save();
 
 
 
-//  createAndSendToken(user,200,res);
+ createAndSendToken(student,200,res);
 
 
 
-// });
+});
