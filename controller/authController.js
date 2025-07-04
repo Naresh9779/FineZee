@@ -37,16 +37,26 @@ const createAndSendToken=(Student,statusCode,res)=>{
 
     } );
 }
-exports.signUp=catchAsync(async(req,res,next)=>{
-const newStudent = await Student.create(req.body);
-// const url=`${req.protocol}://${req.get('host')}/me`;
+exports.signUp = asyncHandler(async (req, res, next) => {
+  if (req.body.role) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'You are not allowed to set a role'
+    });
+  }
 
+  const newStudent = await Student.create({
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
+    password: req.body.password,
+    passwordConfirm: req.body.passwordConfirm,
+   
+  });
 
-createAndSendToken(newStudent,201,res);
-
-
-
+  createAndSendToken(newStudent, 201, res);
 });
+
 exports.login=catchAsync(async(req,res,next) => {
     const {email,password} = req.body;
    
@@ -56,15 +66,15 @@ exports.login=catchAsync(async(req,res,next) => {
 
     }
    
-    const Student=await Student.findOne({email}).select('+password');
+    const student=await Student.findOne({email}).select('+password');
 
 
-    if(!Student||!(await Student.correctPassword(password,Student.password)))
+    if(!student||!(await student.correctPassword(password,student.password)))
     {
         return next(new AppError('Incorrect Password Or Email',400));
     }
        // send token   
-       createAndSendToken(Student,200,res);
+       createAndSendToken(student,200,res);
 
 });
 
@@ -111,7 +121,7 @@ return next();
     
  
     
-    res.locals.Student=currentStudent;
+    res.locals.student=currentStudent;
     console.log(currentStudent);
     return next();
 }}catch(error)
@@ -171,7 +181,7 @@ return next(new AppError(' Student changed password ',401));
     };
     
 
-    console.log(currentStudent);
+    // console.log(currentStudent);
     req.student=currentStudent;
     res.locals.student=currentStudent;
 
@@ -254,14 +264,14 @@ exports.restrictTo=(...roles)=>{
 exports.updatePassword=catchAsync(async(req,res,next) => {
 
  
- const student= await Student.findById(req.params.id).select('+password');
+ const student= await Student.findById(req.student.id).select('+password');
  console.log(student.password);
 
  
-//  if(!(await Student.correctPassword(req.body.passwordCurrent,Student.password)))
-//  {
-//  return next(new AppError('Invalid Password Try Agin',401));
-//  }
+ if(!(await student.correctPassword(req.body.passwordCurrent,student.password)))
+ {
+ return next(new AppError('Invalid Password Try Agin',401));
+ }
  
  
 

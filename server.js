@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app=require("./app");
+const createAdminIfNotExists=require("./middleware/createAdmin")
 
 require("dotenv").config();
 
@@ -16,7 +17,10 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("✅ Connected to MongoDB"))
+  .then(async() => {console.log("✅ Connected to MongoDB")
+
+  await createAdminIfNotExists();}
+)
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 

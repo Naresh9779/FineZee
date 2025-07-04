@@ -14,6 +14,17 @@ router.get('/logout',authController.logout);
 // router.post('/forgotPassword',authController.forgotPassword);
 // router.patch('/resetPassword/:token',authController.resetPassword);
 
-router.get('/get_students',authController.protect,studentController.getStudents)
-router.patch('/update_password/:id',authController.updatePassword);
+
+
+//update profile
+
+router.patch('/updat_profile',authController.protect,studentController.updateStudent);
+router
+router.patch('/update_password',authController.protect,authController.updatePassword);
+
+
+//BOOKMARK
+router.get('/get_bookmarked_universities',authController.protect,studentController.getBookmarkedUniversities);
+router.post('/toggle_bookmark_university',authController.protect,studentController.toggleBookmarkUniversity);
+
 module.exports=router;

@@ -5,6 +5,12 @@ const crypto = require('crypto');
 
 const studentSchema = new mongoose.Schema(
   {
+    role: {
+  type: String,
+  enum: ['student', 'admin'],
+  default: 'student',
+  select: false
+},
     image: {
       type: String,
       default: ''
@@ -35,7 +41,9 @@ const studentSchema = new mongoose.Schema(
     },
     passwordConfirm: {
       type: String,
-      required: [true, 'Please confirm your password'],
+      required: function () {
+        return this.isNew || this.isModified('password');
+      },
       validate: {
         validator: function (el) {
           return el === this.password;
@@ -99,15 +107,12 @@ const studentSchema = new mongoose.Schema(
   }
 );
 
-
 studentSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
 });
-
 
 studentSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
@@ -115,12 +120,10 @@ studentSchema.pre('save', function (next) {
   next();
 });
 
-
 studentSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
-
 
 studentSchema.methods.correctPassword = async function (
   candidatePassword,
@@ -128,7 +131,6 @@ studentSchema.methods.correctPassword = async function (
 ) {
   return await bcrypt.compare(candidatePassword, studentPassword);
 };
-
 
 studentSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
@@ -141,15 +143,13 @@ studentSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-
 studentSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
-
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
-  this.resetTokenExpires = Date.now() + 10 * 60 * 1000; 
+  this.resetTokenExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
 
