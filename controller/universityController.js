@@ -35,3 +35,46 @@ exports.addUniversity = asyncHandler(async (req, res) => {
     });
   }
 });
+
+
+
+const allowedFields = [
+  'name',
+  'location',
+  'description',
+  'tuitionFee',
+  'establishedYear',
+  'ranking',
+  'contactInfo'
+];
+
+exports.updateUniversity = asyncHandler(async (req, res) => {
+  const universityId = req.params.id;
+
+ 
+  const updates = {};
+  allowedFields.forEach(field => {
+    if (req.body[field] !== undefined) {
+      updates[field] = req.body[field];
+    }
+  });
+
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ message: 'No valid fields provided for update' });
+  }
+
+  const updatedUniversity = await University.findByIdAndUpdate(
+    universityId,
+    { $set: updates },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUniversity) {
+    return res.status(404).json({ message: 'University not found' });
+  }
+
+  res.status(200).json({
+    message: 'University updated successfully',
+    data: updatedUniversity
+  });
+});
