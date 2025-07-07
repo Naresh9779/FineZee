@@ -1,31 +1,20 @@
 // api/index.js
-
-const express = require("express");
+const app = require("../app");
 const dotenv = require("dotenv");
 const connectDB = require("../config/db");
 const createAdminIfNotExists = require("../middleware/createAdmin");
 
 dotenv.config();
 
-const app = express();
+let initialized = false;
 
-// Middleware and routes setup
-app.use(express.json());
-app.use("/api/university", require("../routes/universityRoutes"));
-
-// Initialize once
 (async () => {
-  try {
+  if (!initialized) {
     await connectDB();
     await createAdminIfNotExists();
-    console.log("✅ DB Connected & Admin Setup Done");
-  } catch (err) {
-    console.error("❌ Init error:", err);
+    initialized = true;
+    console.log("✅ App initialized on Vercel");
   }
 })();
-
-app.get("/", (req, res) => {
-  res.send("Hello from Express on Vercel!");
-});
 
 module.exports = app;
