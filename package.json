@@ -1,13 +1,13 @@
 {
-  "name": "nodejs-sandbox",
+  "name": "fiezee",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js"
   },
   "keywords": [],
-  "author": "Ives van Hoorne",
+  "author": "Naresh Thapa",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^3.0.2",
