@@ -18,13 +18,10 @@ const initApp = async () => {
   }
 };
 
-module.exports = async (req, res) => {
-  try {
-    await initApp(); // ✅ runs only once per cold start
-    return serverless(app)(req, res);
-  } catch (err) {
-    console.error("❌ Serverless init error:", err);
-    return res.status(500).json({ message: "Server crash", error: err.message });
-  }
+const handler = async (event, context) => {
+  await initApp();
+  const serverlessHandler = serverless(app);
+  return serverlessHandler(event, context);
 };
 
+module.exports.handler = handler;
