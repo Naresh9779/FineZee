@@ -12,3 +12,5 @@ exports.updateUniversity = factory.updateOne(University)
 exports.getUniversity=factory.getOne(University);
 
 exports.updateUniversity=factory.updateOne(University);
+
+exports.deleteUniversity=factory.deleteOne(University);
