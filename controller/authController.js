@@ -1,6 +1,6 @@
 
 const  Student=require('../models/studentModel');
-const catchAsync=require('../middleware/asyncHandler');
+
 const jwt=require('jsonwebtoken');
 const AppError=require('../middleware/AppError')
 const crypto=require('crypto');
@@ -17,9 +17,10 @@ const signToken=id =>{
     });
 };
 
-const createAndSendToken=(Student,statusCode,res)=>{
-    const token=signToken(Student._id);
-    console.log(token)
+const createAndSendToken=(student,statusCode,res)=>{
+    const token=signToken(student._id);
+
+    console.log(student)
     cookieOptions={
         expires:new Date(Date.now()+process.env.COOKIE_JWT_EXPIRES_IN*24*60*60*100 ),
         httpOnly:true,
@@ -33,7 +34,7 @@ const createAndSendToken=(Student,statusCode,res)=>{
     {
      status: 'success',
      token,
-     Student
+     student
 
     } );
 }
@@ -57,7 +58,7 @@ exports.signUp = asyncHandler(async (req, res, next) => {
   createAndSendToken(newStudent, 201, res);
 });
 
-exports.login=catchAsync(async(req,res,next) => {
+exports.login=asyncHandler(async(req,res,next) => {
     const {email,password} = req.body;
    
     if(!email || !password)
@@ -168,7 +169,7 @@ exports.protect =asyncHandler(async(req,res,next) => {
   const decoded= await promisify(jwt.verify)(token,process.env.JWT_SECRET);
 
 
-    const currentStudent=await Student.findById(decoded.id);
+    const currentStudent=await Student.findById(decoded.id).select('+role');
     if(!currentStudent)
     {
         return next(new AppError('This Token No Longer Exist',401));
@@ -189,7 +190,8 @@ return next(new AppError(' Student changed password ',401));
 });
 exports.restrictTo=(...roles)=>{
     return (req,res,next) => {
-        if(!roles.includes(req.Student.role))
+          console.log(req.student)
+        if(!roles.includes(req.student.role))
         {
             return next(new AppError('Do not Have Acess',403));
         }
@@ -197,7 +199,7 @@ exports.restrictTo=(...roles)=>{
     }
 
 };
-// exports.forgotPassword=catchAsync(async(req,res,next)=>{
+// exports.forgotPassword=asyncHandler(async(req,res,next)=>{
 //     const Student = await Student.findOne({email:req.body.email});
 //     if(!Student) {
 //         return next(new AppError('Email Not Found',404));
@@ -233,7 +235,7 @@ exports.restrictTo=(...roles)=>{
  
 
 // });
-// exports.resetPassword=catchAsync(async(req,res,next)=>
+// exports.resetPassword=asyncHandler(async(req,res,next)=>
 // {
 //     const hashedToken=crypto.createHash('sha256').update(req.params.token).digest('hex');
 //     console.log(hashedToken);
@@ -261,7 +263,7 @@ exports.restrictTo=(...roles)=>{
 
 // });
 
-exports.updatePassword=catchAsync(async(req,res,next) => {
+exports.updatePassword=asyncHandler(async(req,res,next) => {
 
  
  const student= await Student.findById(req.student.id).select('+password');

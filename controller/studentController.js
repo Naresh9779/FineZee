@@ -16,7 +16,7 @@ const asyncHandler=require('../middleware/asyncHandler')
 exports.updateStudent = factory.updateOne(Student);
   exports.deleteStudent =factory.deleteOne(Student);
   exports.getStudent = factory.getOne(Student);
-  // exports.getAllStudents=factory.getAll(Student);
+  exports.getAllStudents=factory.getAll(Student);
   exports.getMe=(req,res,next)=>{
     req.params.id=req.student.id;
     next();

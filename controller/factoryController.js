@@ -71,26 +71,25 @@ data:{
 })
 });
 
-// exports.getAll=Model=>asyncHandler(async(req,res)=>{
+exports.getAll=Model=>asyncHandler(async(req,res)=>{
    
+ const doc=await Model.find();
 
-
-//     // eXecute Query
-//      const features = new APIFeatures(Model.find(),req.query)
-//      .filter()
-//      .sort()
-//      .fieldLimiting()
-//      .pagination();
-//     const doc= await features.query;
+    // eXecute Query
+    //  .filter()
+    //  .sort()
+    //  .fieldLimiting()
+    //  .pagination();
+    // const doc= await features.query;
 
   
-//     res.status(200).json({
-//         status:"success",
-//         results: doc.length,
-//         data:{
-//             data:doc
-//         }
+    res.status(200).json({
+        status:"success",
+        results: doc.length,
+        data:{
+            data:doc
+        }
 
-//     });
+    });
 
-// });
+});
