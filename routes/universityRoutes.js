@@ -1,10 +1,13 @@
 const express=require("express");
 const router=express.Router();
 const universityController=require('../controller/universityController')
+const authController=require('../controller/authController')
+
 
 router.get('/get_universities',universityController.getUniversities);
-router.post('/add_universities', universityController.addUniversity)
-router.put('/update_university/:id', universityController.updateUniversity);
+router.get('get_university',universityController.getUniversity);
+router.post('/add_universities',authController.protect,authController.restrictTo('admin'), universityController.addUniversity)
+router.put('/update_university/:id',authController.protect,authController.restrictTo('admin'), universityController.updateUniversity);
 
 
 module.exports=router;

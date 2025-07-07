@@ -1,6 +1,8 @@
 const University = require('../models/universityModel'); 
 
-const asyncHandler=require('../middleware/asyncHandler')
+const asyncHandler=require('../middleware/asyncHandler');
+
+const factory=require('../controller/factoryController')
 
 exports.getUniversities = asyncHandler(async (req, res) => {
 
@@ -80,3 +82,6 @@ exports.updateUniversity = asyncHandler(async (req, res) => {
     data: updatedUniversity
   });
 });
+
+
+exports.getUniversity=factory.getOne(University);
