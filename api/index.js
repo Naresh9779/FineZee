@@ -6,23 +6,21 @@ const createAdminIfNotExists = require("../middleware/createAdmin");
 
 dotenv.config();
 
+let serverlessHandler; // Cache the serverless handler
 let initialized = false;
 
 const initApp = async () => {
   if (!initialized) {
-    console.log("🚀 Initializing Vercel serverless...");
-    await connectDB();
-    await createAdminIfNotExists();
+    console.log("🚀 Connecting to DB and preparing app...");
+    await connectDB(); // Connect DB once
+    await createAdminIfNotExists(); // One-time setup
+    serverlessHandler = serverless(app); // Create handler once
     initialized = true;
     console.log("✅ Initialization complete");
   }
 };
 
-const handler = async (event, context) => {
+module.exports = async (req, res) => {
   await initApp();
-  const serverlessHandler = serverless(app);
-  return serverlessHandler(event, context);
+  return serverlessHandler(req, res); // Use Express handler
 };
-
-// ✅ Export handler directly
-module.exports = handler;
