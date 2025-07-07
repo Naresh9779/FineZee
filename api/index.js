@@ -6,9 +6,25 @@ const createAdminIfNotExists = require("../middleware/createAdmin");
 
 dotenv.config();
 
-(async () => {
-  await connectDB();
-  await createAdminIfNotExists(); // ensure admin created in Vercel too
-})();
+let initialized = false;
 
-module.exports = serverless(app);
+const initApp = async () => {
+  if (!initialized) {
+    console.log("🚀 Initializing Vercel serverless...");
+    await connectDB();
+    await createAdminIfNotExists();
+    initialized = true;
+    console.log("✅ Initialization complete");
+  }
+};
+
+module.exports = async (req, res) => {
+  try {
+    await initApp(); // ✅ runs only once per cold start
+    return serverless(app)(req, res);
+  } catch (err) {
+    console.error("❌ Serverless init error:", err);
+    return res.status(500).json({ message: "Server crash", error: err.message });
+  }
+};
+
