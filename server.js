@@ -9,7 +9,6 @@ require("dotenv").config();
 
 const port = 3000;
 
-app.use(express.json());
 
 // MongoDB Connection
 mongoose
@@ -29,4 +28,3 @@ app.listen(port, () => {
 });
 
 
-export default app;
