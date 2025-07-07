@@ -9,7 +9,7 @@ const studentSchema = new mongoose.Schema(
   type: String,
   enum: ['student', 'admin'],
   default: 'student',
-  select: false
+  
 },
     image: {
       type: String,

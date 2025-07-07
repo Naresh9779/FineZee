@@ -169,7 +169,7 @@ exports.protect =asyncHandler(async(req,res,next) => {
   const decoded= await promisify(jwt.verify)(token,process.env.JWT_SECRET);
 
 
-    const currentStudent=await Student.findById(decoded.id).select('+role');
+    const currentStudent=await Student.findById(decoded.id);
     if(!currentStudent)
     {
         return next(new AppError('This Token No Longer Exist',401));
@@ -267,7 +267,7 @@ exports.updatePassword=asyncHandler(async(req,res,next) => {
 
  
  const student= await Student.findById(req.student.id).select('+password');
- console.log(student.password);
+
 
  
  if(!(await student.correctPassword(req.body.passwordCurrent,student.password)))

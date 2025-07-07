@@ -73,7 +73,7 @@ data:{
 
 exports.getAll=Model=>asyncHandler(async(req,res)=>{
    
- const doc=await Model.find().select('-role');
+ const doc=await Model.find();
 
     // eXecute Query
     //  .filter()
