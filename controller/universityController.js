@@ -3,8 +3,11 @@ const University = require('../models/universityModel');
 const asyncHandler=require('../middleware/asyncHandler')
 
 exports.getUniversities = asyncHandler(async (req, res) => {
+
+
  
     const all_universities=await University.find();
+      console.log("✅ Universities retrieved:", all_universities.length);
 
     res.status(200).json(all_universities)
 
