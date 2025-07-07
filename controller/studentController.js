@@ -19,7 +19,8 @@ exports.updateStudent = factory.updateOne(Student);
   exports.getAllStudents=factory.getAll(Student);
   exports.getMe=(req,res,next)=>{
     req.params.id=req.student.id;
-    next();
+      next();
+    
   }
 
 

@@ -15,14 +15,14 @@ router.get('/logout',authController.logout);
 // router.patch('/resetPassword/:token',authController.resetPassword);
 
 //details
-router.get('/get_profile',authController.protect,studentController.getMe);
+router.get('/get_profile',authController.protect,studentController.getMe,studentController.getStudent);
 
 
 
 
 //update profile
 
-router.patch('/updat_profile',authController.protect,studentController.updateStudent);
+router.patch('/update_profile',authController.protect,studentController.updateStudent);
 
 router.patch('/update_password',authController.protect,authController.updatePassword);
 
