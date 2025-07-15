@@ -4,8 +4,11 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+     "format": "prettier --write \"**/*.{ts,tsx,md,js,jsx}\""
   },
+  "devDependencies": {
+    "prettier": "^3.5.3"},
   "keywords": [],
   "author": "Naresh Thapa",
   "license": "MIT",
